@@ -36,8 +36,7 @@ FusionEKF::FusionEKF() {
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
-  float noise_ax = 9.0;
-  float noise_ay = 9.0;
+
 
 }
 
@@ -84,7 +83,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       /**
       Initialize state.
       */
-      ekf_.x << measurement_pack.raw_measurements_[0],measurement_pack.raw_measurements_[1], 0, 0;
+      ekf_.x_ << measurement_pack.raw_measurements_[0],measurement_pack.raw_measurements_[1], 0, 0;
       //initial velocity of lidar unknown so initialized with 0
     }
     // initialize the covariance matrix
@@ -112,7 +111,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
      * Update the process noise covariance matrix.
      * Use noise_ax = 9 and noise_ay = 9 for your Q matrix.
    */
-  float delta_t = measurement_pack.timestamp_- previous_timestamp_
+  float delta_t = measurement_pack.timestamp_- previous_timestamp_;
   delta_t /= 1000000.0;
 
   // State transition matrix update
@@ -122,6 +121,9 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			       0, 0, 1, 0,
 			       0, 0, 0, 1;
 
+   float noise_ax = 9.0;
+   float noise_ay = 9.0;
+   
    float delta_t_2 = delta_t * delta_t; //delta_t^2
    float delta_t_3 = delta_t_2 * delta_t; //delta_t^3
    float delta_t_4 = delta_t_3 * delta_t; //delta_t^4
