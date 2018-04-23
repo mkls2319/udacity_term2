@@ -62,7 +62,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   //check division by zero
   if(eq1 < .00001) {
     px += .001;
-    y += .001;
+    py += .001;
     eq1 = sqrt(px * px + py * py);
   }
   float eq2 = atan2(py,px);
