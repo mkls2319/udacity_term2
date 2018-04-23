@@ -90,8 +90,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.P_ = MatrixXd(4,4);
     ekf_.P_ << 1,0,0,0,
                0,1,0,0,
-               0,0,10000,0,
-               0,0,0,10000;
+               0,0,1000,0,
+               0,0,0,1000;
 
     //initialize pervious timestamp for delta_t
     previous_timestamp_ = measurement_pack.timestamp_;
@@ -123,7 +123,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
    float noise_ax = 9.0;
    float noise_ay = 9.0;
-   
+
    float delta_t_2 = delta_t * delta_t; //delta_t^2
    float delta_t_3 = delta_t_2 * delta_t; //delta_t^3
    float delta_t_4 = delta_t_3 * delta_t; //delta_t^4
