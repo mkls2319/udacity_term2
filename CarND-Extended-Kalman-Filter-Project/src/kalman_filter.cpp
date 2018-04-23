@@ -52,21 +52,21 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   TODO:
     * update the state by using Extended Kalman Filter equations
   */
-  float x = x_(0);
-  float y = x_(1);
+  float px = x_(0);
+  float py = x_(1);
   float vx = x_(2);
   float vy = x_(3);
 
   // Equations for h_func below
-  float eq1 = sqrt(x * x + y * y);
+  float eq1 = sqrt(px * px + py * py);
   //check division by zero
   if(eq1 < .00001) {
-    x += .001;
+    px += .001;
     y += .001;
-    eq1 = sqrt(x * x + y * y);
+    eq1 = sqrt(px * px + py * py);
   }
-  float eq2 = atan2(y,x);
-  float eq3 = (x*vx+y*vy)/eq1;
+  float eq2 = atan2(py,px);
+  float eq3 = (px*vx+py*vy)/eq1;
 
   VectorXd H_vec(3);
   H_vec << eq1, eq2, eq3;
