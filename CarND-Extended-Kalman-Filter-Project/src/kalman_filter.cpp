@@ -73,7 +73,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
 
   VectorXd H_vec(3);
-  H_func << eq1, eq2, eq3;
+  H_vec << eq1, eq2, eq3;
 
   VectorXd y = z - H_vec;
   MatrixXd Ht = H_.transpose();
