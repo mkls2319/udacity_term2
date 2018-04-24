@@ -14,7 +14,6 @@ using std::vector;
 FusionEKF::FusionEKF() {
   is_initialized_ = false;
 
-  previous_timestamp_ = 0;
 
   // initializing matrices
   R_laser_ = MatrixXd(2, 2);
@@ -31,23 +30,14 @@ FusionEKF::FusionEKF() {
         0, 0.0009, 0,
         0, 0, 0.09;
 
+
+  previous_timestamp_ = 0;
   /**
   TODO:
     * Finish initializing the FusionEKF.
     * Set the process and measurement noises
   */
-  // Initializing P
-  ekf_.P_ = MatrixXd(4, 4);
-  ekf_.P_ << 1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1000, 0,
-             0, 0, 0, 1000;
 
-  H_laser_ << 1, 0, 0, 0,
-              0, 1, 0, 0;
-
-  double noise_ax = 9.0;
-  double noise_ay = 9.0;            
 }
 
 /**
@@ -73,36 +63,38 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     ekf_.x_ << 1, 1, 1, 1;
 
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
-      cout << "EKF : First measurement RADAR" << endl;
-      /**
-      Convert radar from polar to cartesian coordinates and initialize state.
-      */
-      double rho = measurement_pack.raw_measurements_[0]; // range
-  	  double phi = measurement_pack.raw_measurements_[1]; // bearing
-  	  double rho_dot = measurement_pack.raw_measurements_[2]; // velocity of rho
-  	  // Coordinates convertion from polar to cartesian
+
+      double rho = measurement_pack.raw_measurements_[0];
+  	  double phi = measurement_pack.raw_measurements_[1];
+  	  double rho_dot = measurement_pack.raw_measurements_[2];
+
   	  double x = rho * cos(phi);
+      double y = rho * sin(phi);
+
       if ( x < 0.0001 ) {
         x = 0.0001;
       }
-  	  double y = rho * sin(phi);
-      if ( y < 0.0001 ) {
+  	  if ( y < 0.0001 ) {
         y = 0.0001;
       }
-  	  double vx = rho_dot * cos(phi);
-  	  double vy = rho_dot * sin(phi);
+
+  	  double vx = cos(phi) * rho_dot;
+  	  double vy = sin(phi) * rho_dot;
       ekf_.x_ << x, y, vx , vy;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
-      /**
-      Initialize state.
-      */
-      // No velocity and coordinates are cartesian already.
-      cout << "EKF : First measurement LASER" << endl;
+
       ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0;
     }
+    ekf_.P_ = MatrixXd(4, 4);
+    ekf_.P_ << 1, 0, 0, 0,
+               0, 1, 0, 0,
+               0, 0, 1000, 0,
+               0, 0, 0, 1000;
 
-    // Saving first timestamp in seconds
+    H_laser_ << 1, 0, 0, 0,
+                0, 1, 0, 0;
+
     previous_timestamp_ = measurement_pack.timestamp_ ;
     // done initializing, no need to predict or update
     is_initialized_ = true;
@@ -132,7 +124,8 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 
   // Noise covariance matrix computation
   // Noise values from the task
-
+  double noise_ax = 9.0;
+  double noise_ay = 9.0;
 
   double dt_2 = dt * dt; //dt^2
   double dt_3 = dt_2 * dt; //dt^3
