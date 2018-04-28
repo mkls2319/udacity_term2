@@ -127,20 +127,20 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
     // Create the covariance matrix.
 
 
-    if( meas_pack.sensor_type_ == MeasurementPackage::RADAR )
+    if( meas_package.sensor_type_ == MeasurementPackage::RADAR )
     {
       // Radar to cartesian coordinates from polar
-      double rho = meas_pack.raw_measurements_[0];
-      double phi = meas_pack.raw_measurements_[1];
+      double rho = meas_package.raw_measurements_[0];
+      double phi = meas_package.raw_measurements_[1];
       x_ << rho*cos(phi), rho*sin(phi), 0., 0., 0.;
     }
     else
     {
       // Initialize laser
-      x_ << meas_pack.raw_measurements_[0], meas_pack.raw_measurements_[1], 0., 0., 0.;
+      x_ << meas_package.raw_measurements_[0], meas_package.raw_measurements_[1], 0., 0., 0.;
     }
 
-    previous_timestamp_ = meas_pack.timestamp_;
+    previous_timestamp_ = meas_package.timestamp_;
 
     P_.fill(0.);
     P_(0,0) = 1.;
@@ -155,19 +155,19 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   }
 
   // Previous measurement in seconds
-  double dt = ( meas_pack.timestamp_ - previous_timestamp_ )/1000000.0;
-  previous_timestamp_ = meas_pack.timestamp_;
+  double dt = ( meas_package.timestamp_ - previous_timestamp_ )/1000000.0;
+  previous_timestamp_ = meas_package.timestamp_;
 
   if( dt > 0.0001 )
     Prediction( dt );
 
-  if( meas_pack.sensor_type_ == MeasurementPackage::LASER )
+  if( meas_package.sensor_type_ == MeasurementPackage::LASER )
   {
-    UpdateLidar( meas_pack );
+    UpdateLidar( meas_package );
   }
   else
   {
-    UpdateRadar( meas_pack );
+    UpdateRadar( meas_package );
   }
 }
 
@@ -303,13 +303,11 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   K_laser_ = Tc_laser_*S_laser_.inverse();
 
   //State mean and covariance matrix
-  deltaz_laser_ = meas_pack.raw_measurements_ - z_pred_laser_;
+  deltaz_laser_ = meas_package.raw_measurements_ - z_pred_laser_;
 
   x_ = x_ + K_laser_*deltaz_laser_;
   P_ = P_ - K_laser_*S_laser_*K_laser_.transpose();
 
-  NIS_laser_ = deltaz_laser_.transpose()*S_laser_.inverse()*deltaz_laser_;
-  NISvals_laser_ << NIS_laser_ << endl;
 }
 
 /**
@@ -377,14 +375,11 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   K_radar_ = Tc_radar_*S_radar_.inverse();
 
   //State mean and covariance matrix
-  deltaz_radar_ = meas_pack.raw_measurements_ - z_pred_radar_;
+  deltaz_radar_ = meas_package.raw_measurements_ - z_pred_radar_;
   while( deltaz_radar_(1) > M_PI ) deltaz_radar_(1)-=2.*M_PI;
   while( deltaz_radar_(1) <-M_PI ) deltaz_radar_(1)+=2.*M_PI;
 
   x_ = x_ + K_radar_*deltaz_radar_;
   P_ = P_ - K_radar_*S_radar_*K_radar_.transpose();
 
-
-  NIS_radar_ = deltaz_radar_.transpose()*S_radar_.inverse()*deltaz_radar_;
-  NISvals_radar_ << NIS_radar_ << endl;;
 }
