@@ -19,7 +19,7 @@
 
 using namespace std;
 
-
+static default_random_engine r_gen;
 
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of
@@ -29,17 +29,17 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	num_particles = 100;
 
 	// sensor noise x, y, and theta
-	normal_distribution<double> N_x(0, std[0]);
-	normal_distribution<double> N_y(0, std[1]);
-	normal_distribution<double> N_theta(0, std[2]);
+	normal_distribution<double> Noise_x(0, std[0]);
+	normal_distribution<double> Noise_y(0, std[1]);
+	normal_distribution<double> Noise_theta(0, std[2]);
 
 	for (int i = 0; i < num_particles; i++)
 	{
 		Particle p;
 		p.id = i;
-		p.x = x + N_x(gen);
-		p.y = y + N_y(gen);
-		p.theta = theta + N_theta(gen);
+		p.x = x + Noise_x(r_gen);
+		p.y = y + Noise_y(r_gen);
+		p.theta = theta + Noise_theta(r_gen);
 		p.weight = 1.0;
 
 		particles.push_back(p);
@@ -53,21 +53,21 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
-	normal_distribution<double> N_x(0, std_pos[0]);
-	normal_distribution<double> N_y(0, std_pos[1]);
-	normal_distribution<double> N_theta(0, std_pos[2]);
+	normal_distribution<double> Noise_x(0, std_pos[0]);
+	normal_distribution<double> Noise_y(0, std_pos[1]);
+	normal_distribution<double> Noise_theta(0, std_pos[2]);
 
 	for (int i = 0; i < num_particles; i++)
 	{
 		if (fabs(yaw_rate) < 0.000001)
 		{
-      particles[i].x += velocity * delta_t * cos(particles[i].theta) + N_x(gen);
-      particles[i].y += velocity * delta_t * sin(particles[i].theta) + N_y(gen);
+      particles[i].x += velocity * delta_t * cos(particles[i].theta) + Noise_x(r_gen);
+      particles[i].y += velocity * delta_t * sin(particles[i].theta) + Noise_y(r_gen);
     }
     else
 		{
-      particles[i].x += velocity / yaw_rate * (sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta)) + N_x(gen);
-      particles[i].y += velocity / yaw_rate * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t)) + N_y(gen);
+      particles[i].x += velocity / yaw_rate * (sin(particles[i].theta + yaw_rate*delta_t) - sin(particles[i].theta)) + Noise_x(r_gen);
+      particles[i].y += velocity / yaw_rate * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate*delta_t)) + Noise_y(r_gen);
       particles[i].theta += yaw_rate * delta_t;
     }
 	}
@@ -182,7 +182,7 @@ void ParticleFilter::resample() {
 
 
   uniform_int_distribution<int> uniintdist(0, num_particles-1);
-  auto ind = uniintdist(gen);
+  auto ind = uniintdist(r_gen);
 
   double m_weight = *max_element(w.begin(), w.end());
 
@@ -192,7 +192,7 @@ void ParticleFilter::resample() {
 
   for (int i = 0; i < num_particles; i++)
 	{
-    beta += unirealdist(gen) * 2.0;
+    beta += unirealdist(r_gen) * 2.0;
     while (beta > w[ind]) {
       beta -= w[ind];
       ind = (ind + 1) % num_particles;
