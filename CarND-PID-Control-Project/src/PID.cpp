@@ -15,7 +15,7 @@ void PID::Init(double Kp, double Ki, double Kd) {
   this->Ki = Ki;
   this->Kd = Kd;
 
-  p_error = numeric_limits<double>::max();
+  p_error = 0.0;
 
   i_error = 0.0;
 
@@ -23,9 +23,6 @@ void PID::Init(double Kp, double Ki, double Kd) {
 }
 
 void PID::UpdateError(double cte) {
-  if (p_error == numeric_limits<double>::max())
-    p_error = cte;
-
   d_error = cte - p_error;
   p_error = cte;
   i_error += cte;
